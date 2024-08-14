@@ -15,6 +15,11 @@ public class Menu_UI : MonoBehaviour
         SceneManager.LoadScene("Stage2");
     }
 
+        public void MainMenu()
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
+
     public void Quit()
     {
         Debug.Log("Quitting Game");
