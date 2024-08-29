@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,17 +7,18 @@ public class RhythmButton : MonoBehaviour
 {
     [SerializeField]
     public KeyCode key;
-    [SerializeField]
-    bool active = false;
-    [SerializeField]
-    GameObject note;
 
     public bool createMode;
     public GameObject notePrefab;
 
+    BoxCollider2D col;
+    Scoreboard scoreboard;
+
     // Start is called before the first frame update
     void Start()
     {
+        col = this.GetComponent<BoxCollider2D>();
+        scoreboard = (Scoreboard)FindObjectOfType<Scoreboard>();
     }
 
     // Update is called once per frame
@@ -24,7 +26,7 @@ public class RhythmButton : MonoBehaviour
     {
         if (createMode)
         {
-            if(Input.GetKeyDown(key))
+            if (Input.GetKeyDown(key))
             {
                 GameObject n = Instantiate(notePrefab, transform.position, Quaternion.identity);
                 n.transform.parent = transform;
@@ -34,27 +36,45 @@ public class RhythmButton : MonoBehaviour
         {
             if (Input.GetKeyDown(key))
             {
-                Debug.Log("Note should be destroyed");
-                Destroy(note);
+                GameObject[] notes = GameObject.FindGameObjectsWithTag("Note");
+                (GameObject closestNote, float distance) = FindClosestNoteUnderKey(notes);
+                if (closestNote is not null)
+                {
+                    Debug.Log("Note should be destroyed");
+                    scoreboard.IncreaseScore(distance);
+                    Destroy(closestNote);
+                }
             }
         }
-        
+
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    // depending on spacing and sizing, we might have multiple notes under the key at once
+    // so this is required to disambiguate them
+    (GameObject, float) FindClosestNoteUnderKey(GameObject[] notes)
     {
-        active = true;
-        if (collision.tag == "Note")
+        GameObject closest = null;
+        float minDist = Mathf.Infinity;
+
+        // find the closest note
+        foreach (GameObject note in notes)
         {
-            note = collision.gameObject;
-            Debug.Log(active);
-            Debug.Log(note);
+            float noteDist = Vector2.Distance(note.GetComponent<Rigidbody2D>().position, col.transform.position);
+            if (noteDist < minDist)
+            {
+                closest = note;
+                minDist = noteDist;
+            }
         }
-    }
 
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        active = false;
-        Debug.Log("Note is not in range");
+        // if the closest note is not touching the collider, don't destroy
+        // we assume it's impossible for note A to touch the collider while being farther than note B which does not touch the collider,
+        // so don't make the bounding box weird asymmetrical shapes :p
+        if (closest is null || !col.IsTouching(closest.GetComponent<Collider2D>()))
+        {
+            return (null, Mathf.Infinity);
+        }
+
+        return (closest, minDist);
     }
 }
