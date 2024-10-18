@@ -14,11 +14,17 @@ public class RhythmButton : MonoBehaviour
     BoxCollider2D col;
     Scoreboard scoreboard;
 
+    // dealing with "bad, good, great, perfect" input
+    public GameObject character;
+    private CharacterDance danceScript;
+
+
     // Start is called before the first frame update
     void Start()
     {
         col = this.GetComponent<BoxCollider2D>();
         scoreboard = (Scoreboard)FindObjectOfType<Scoreboard>();
+        danceScript = character.GetComponent<CharacterDance>(); // access to character dance script
     }
 
     // Update is called once per frame
@@ -38,6 +44,8 @@ public class RhythmButton : MonoBehaviour
             {
                 GameObject[] notes = GameObject.FindGameObjectsWithTag("Note");
                 (GameObject closestNote, float distance) = FindClosestNoteUnderKey(notes);
+                Debug.Log(key);
+                danceScript.currentKeyDown(key);
                 if (closestNote is not null)
                 {
                     Debug.Log("Note should be destroyed");

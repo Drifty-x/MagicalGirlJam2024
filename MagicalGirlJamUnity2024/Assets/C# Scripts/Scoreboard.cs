@@ -19,6 +19,13 @@ public class Scoreboard : MonoBehaviour
 
     string scoreFString;
 
+
+    // dealing with "bad, good, great, perfect" input
+    public GameObject character;
+    private CharacterDance danceScript;
+
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -31,6 +38,8 @@ public class Scoreboard : MonoBehaviour
         textComp = this.GetComponentInChildren<TMP_Text>();
         scoreFString = "D" + ((int)Mathf.Floor(Mathf.Log(slider.maxValue, 10)) + 1).ToString();
         textComp.text = 0.ToString(scoreFString); // fill out the score with 0s = # of digits in maxscore
+
+        danceScript = character.GetComponent<CharacterDance>(); // access to character dance script
     }
 
     // Update is called once per frame
@@ -50,19 +59,23 @@ public class Scoreboard : MonoBehaviour
         if (distance <= 5) // perfect
         {
             score += maxScorePerNote;
+            danceScript.hitGrade = "PERFECT";
             // todo in each of these spawn appropriate gui vfx that says "perfect!" or "bad" or w/e
         }
         else if (distance <= 25) // Great
         {
             score += (int) Mathf.Round(0.6f * maxScorePerNote);
+            danceScript.hitGrade = "GREAT";
         }
         else if (distance <= 60) // Good
         {
             score += (int)Mathf.Round(0.4f * maxScorePerNote);
+            danceScript.hitGrade = "GOOD";
         }
         else // Bad
         {
             score += (int)Mathf.Round(0.15f * maxScorePerNote);
+            danceScript.hitGrade = "BAD";
         }
 
         Debug.Log(score);
